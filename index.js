@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -22,17 +22,27 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const personCollection = client.db("nodeMongoCrud").collection("person");
+
     app.get("/users", async (req, res) => {
       const query = {};
       const cursor = personCollection.find(query);
       const users = await cursor.toArray();
       res.send(users);
     });
+
     app.post("/users", async (req, res) => {
       const user = req.body;
       console.log(user);
 
       const result = await personCollection.insertOne(user);
+      res.send(result);
+    });
+
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("Trying to delete", id);
+      const query = { _id: new ObjectId(id) };
+      const result = await personCollection.deleteOne(query);
       res.send(result);
     });
   } finally {
